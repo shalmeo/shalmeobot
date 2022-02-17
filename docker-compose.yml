@@ -1,0 +1,51 @@
+version: '3.3'
+
+services:
+  bot:
+    container_name: "${BOT_NAME:-tg_bot-container}"
+    build:
+      context: .
+    working_dir: "/usr/src/app/${BOT_NAME:-tg_bot}"
+    volumes:
+    - .:/usr/src/app/${BOT_NAME:-tg_bot}
+    command: python -m bot
+    restart: unless-stopped
+    depends_on:
+      - database
+      - redis
+    ports:
+      - 5051:5051
+    networks:
+      - botnet
+  database:
+    image: "postgres:13-alpine"
+    container_name: "database"
+    volumes:
+      - ./pgdata:/var/lib/postgresql
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: $DB_LOGIN
+      POSTGRES_PASSWORD: $DB_PASS
+      POSTGRES_DB: $DB_NAME
+    ports:
+      - 5432:5432
+    networks:
+      - botnet
+  redis:
+    image: redis:6.0-alpine
+    restart: "unless-stopped"
+    environment:
+      - REDIS_HOST
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - ./redis_data:/data
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - 6379:6379
+    networks:
+      - botnet
+
+
+networks:
+  botnet:
+    driver: bridge
