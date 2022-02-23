@@ -46,13 +46,15 @@ async def confirm(message: types.Message, state: FSMContext, session: AsyncSessi
     if message.text == '✅ Да':
         await add_referal(session, referal_id, user)  
     
-    await message.answer('Нажмите /start, чтобы посмотреть информацию о доступе.', reply_markup=types.ReplyKeyboardRemove())
+    await message.answer('Нажмите /start, чтобы посмотреть информацию о доступе.',
+                         reply_markup=types.ReplyKeyboardRemove())
     await state.finish()
 
     
 @allow_acces()
 async def cancel(message: types.Message, state: FSMContext):
-    await message.answer('Нажмите /start, чтобы посмотреть информацию о доступе.', reply_markup=types.ReplyKeyboardRemove())
+    await message.answer('Нажмите /start, чтобы посмотреть информацию о доступе.',
+                         reply_markup=types.ReplyKeyboardRemove())
     await state.finish()
 
 

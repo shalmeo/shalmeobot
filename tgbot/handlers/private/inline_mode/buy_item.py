@@ -1,10 +1,10 @@
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram_dialog import DialogManager, StartMode
-from glQiwiApi import QiwiP2PClient, QiwiWrapper
 from sqlalchemy.ext.asyncio import AsyncSession
-from glQiwiApi.qiwi.clients.p2p.types import Bill
-from glQiwiApi.qiwi.exceptions import QiwiAPIError
+from glQiwiApi import QiwiWrapper
+from glQiwiApi.utils.exceptions import APIError
+
 
 from tgbot.config import Config
 from tgbot.services.database.models import Items, User
@@ -13,7 +13,8 @@ from tgbot.keyboards.inline import buy_kb, check_paid, confirmation_kb, confirma
 from tgbot.misc.send_to_admin import send_admin
 
 
-async def confirmation(call: types.CallbackQuery, state: FSMContext, callback_data: dict, session: AsyncSession, user: User):
+async def confirmation(call: types.CallbackQuery, state: FSMContext, callback_data: dict,
+                       session: AsyncSession, user: User):
     if not user.email:
         await call.answer('На данный момент вам не доступны покупки.\n'
                           'Чтобы это исправить вам необходимо привязать почту.\n'
@@ -30,26 +31,25 @@ async def confirmation(call: types.CallbackQuery, state: FSMContext, callback_da
                                     reply_markup=confirmation_kb(action))
 
 
-async def payment(call: types.CallbackQuery, state: FSMContext, qiwi_p2p_client: QiwiP2PClient, session: AsyncSession):
+async def payment(call: types.CallbackQuery, state: FSMContext, qiwi_p2p_client: QiwiWrapper, session: AsyncSession):
     item_id = (await state.get_data()).get('item_id')
     item: Items = await session.get(Items, item_id)
     
     try:
         async with qiwi_p2p_client:
             bill = await qiwi_p2p_client.create_p2p_bill(amount=item.price)
-        await state.update_data(bill_id=bill.id)
+        await state.update_data(bill_id=bill.bill_id)
         await call.message.edit_caption(f"🔗 Вы можете оплатить счет по сслыке ниже:\n {bill.pay_url}",
                                         reply_markup=check_paid())
-    except QiwiAPIError:
+    except APIError:
         await call.answer('😔 К сожалению сервис временно не доступен', show_alert=False)
     
-    
 
-
-async def successful_payment(call: types.CallbackQuery, state: FSMContext, user: User, session: AsyncSession, config: Config, qiwi_p2p_client: QiwiP2PClient):
+async def successful_payment(call: types.CallbackQuery, state: FSMContext, user: User, session: AsyncSession,
+                             config: Config, qiwi_p2p_client: QiwiWrapper):
     bill_id = (await state.get_data()).get('bill_id')
     
-    if await qiwi_p2p_client.get_bill_by_id(bill_id) == 'PAID':
+    if await qiwi_p2p_client.check_p2p_bill_status(bill_id) == 'PAID':
         await call.message.edit_caption("🎉 Вы успешно оплатили покупку!\n"
                                         "В течении дня с вами свяжется админ\n\n"
                                         "Если с вами не свзялись в течении дня\n"
@@ -70,7 +70,8 @@ async def successful_payment(call: types.CallbackQuery, state: FSMContext, user:
         await call.answer("😔 Счет не был оплачен", show_alert=False)
         
 
-async def payment_with_points(call: types.CallbackQuery, state: FSMContext, user: User, session: AsyncSession, config: Config):  
+async def payment_with_points(call: types.CallbackQuery, state: FSMContext, user: User,
+                              session: AsyncSession, config: Config):
     item_id = (await state.get_data()).get('item_id')
     item: Items = await session.get(Items, item_id)    
     

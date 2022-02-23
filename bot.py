@@ -9,7 +9,7 @@ from aiogram_dialog import DialogRegistry
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
-from glQiwiApi import QiwiP2PClient
+from glQiwiApi import QiwiWrapper
 
 from tgbot.config import load_config
 from tgbot.services.database.base import Base
@@ -45,11 +45,11 @@ async def main():
     db_pool = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
     
     # Creating
-    storage = RedisStorage2(host='redis')
+    storage = RedisStorage2(host='redis') if config.tg_bot.use_redis else MemoryStorage()
     bot = Bot(token=config.tg_bot.token, parse_mode='HTML')
     dp = Dispatcher(bot, storage=storage)
     
-    wallet = QiwiP2PClient(secret_p2p=config.qiwi.p2p_token)
+    wallet = QiwiWrapper(secret_p2p=config.qiwi.p2p_token)
     registry = DialogRegistry(dp)  
     
     # setup

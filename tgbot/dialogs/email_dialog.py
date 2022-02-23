@@ -30,13 +30,6 @@ email_dialog = Dialog(
         state=EmailSG.confirm,
         getter=email_getter
     ),
-    
-    Window(
-        Const('🎉 Успешно!\n'
-              'Чтобы изменить почту:\n'
-              'Информация -> Изменить почту'),
-        state=EmailSG.finish
-    )
 )
 
 

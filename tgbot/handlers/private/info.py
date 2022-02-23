@@ -1,3 +1,4 @@
+import asyncio
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram_dialog import Dialog, DialogManager, StartMode
@@ -31,11 +32,15 @@ async def input_email(message: types.Message, dialog: Dialog, manager: DialogMan
     
     
 async def confirm_email(call: types.CallbackQuery, button: Button, dialog_manager: DialogManager):
+    await dialog_manager.done()
+    await call.message.answer('🎉 Успешно!\n'
+                              'Чтобы изменить почту:\n'
+                              'Информация -> Изменить почту')
+    
     session: AsyncSession = dialog_manager.data.get('session')
     email = dialog_manager.current_context().dialog_data.get('email')
-    await session.execute(update(User).where(User.user_id==call.from_user.id).values(email=email))
+    await session.execute(update(User).where(User.user_id == call.from_user.id).values(email=email))
     await session.commit()
-    await dialog_manager.dialog().next()
 
 
 async def go_back(call: types.CallbackQuery, button: Button, dialog_manager: DialogManager):

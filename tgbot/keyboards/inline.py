@@ -62,6 +62,8 @@ def successful_payment_kb():
 
 
 item_cb = CallbackData('item', 'action')
+
+
 def del_item_kb():
     keyboard= InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text='🗑 Удалить товар', callback_data=item_cb.new('del'))],

@@ -6,7 +6,8 @@ from tgbot.services.database.models import User
 
 
 class ACLMiddleware(BaseMiddleware):
-    async def setup_chat(self, data: dict, tg_user: types.User):
+    @staticmethod
+    async def setup_chat(data: dict, tg_user: types.User):
         session: AsyncSession = data.get('session')
         user = await session.get(User, tg_user.id)
         if user is None:
@@ -14,8 +15,7 @@ class ACLMiddleware(BaseMiddleware):
             await session.merge(user)
             await session.commit()
         data['user'] = user
-        
-        
+
     async def on_pre_process_message(self, message: types.Message, data: dict):
         await self.setup_chat(data, message.from_user)
 

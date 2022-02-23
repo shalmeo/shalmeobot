@@ -7,7 +7,9 @@ from tgbot.services.database.models import Items
 
 async def show_items(query: types.InlineQuery, session: AsyncSession):
     if len(query.query) >= 1:
-        items = await session.scalars(select(Items).where(Items.title.like(f'%{query.query.capitalize()}%')).order_by(Items.title))
+        items = await session.scalars(select(Items).where(
+            Items.title.like(f'%{query.query.capitalize()}%')
+        ).order_by(Items.title))
     else:
         items = await session.scalars(select(Items).order_by(Items.title))
         

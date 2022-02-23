@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import List
 
 from environs import Env
 
@@ -15,12 +16,14 @@ class DbConfig:
 @dataclass
 class TgBot:
     token: str
-    admin_ids: list[int]
+    admin_ids: List[int]
+    use_redis: bool
     
 
 @dataclass
 class Qiwi:
-    p2p_token: str = None
+    p2p_token: str
+    phone_number: str
 
 
 @dataclass
@@ -38,6 +41,7 @@ def load_config(path: str = None):
         tg_bot=TgBot(
             token=env.str("BOT_TOKEN"),
             admin_ids=list(map(int, env.list("ADMINS"))),
+            use_redis=env.bool("USE_REDIS")
         ),
         db=DbConfig(
             login=env.str('DB_LOGIN'),
@@ -47,6 +51,7 @@ def load_config(path: str = None):
             name=env.str('DB_NAME'),
         ),
         qiwi=Qiwi(
-            p2p_token=env.str('P2P_TOKEN')
+            p2p_token=env.str('P2P_TOKEN'),
+            phone_number=env.str('PHONE_NUMBER')
         ),
     )

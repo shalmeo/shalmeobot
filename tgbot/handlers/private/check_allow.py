@@ -17,5 +17,6 @@ async def check_allow(call: types.CallbackQuery, user: User):
     else:
         await call.answer('Доступ к боту запрещен! 🚫', show_alert=False)
 
+
 def setup(dp: Dispatcher):
     dp.register_callback_query_handler(check_allow, text='check_allow')

@@ -4,6 +4,7 @@ import logging
 from aiogram import Bot
 from aiogram.utils import exceptions
 
+
 async def send_message(bot: Bot, user_id, text: str, disable_notification: bool = False) -> bool:
     try:
         await bot.send_message(user_id, text, disable_notification=disable_notification)
