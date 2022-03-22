@@ -38,9 +38,7 @@ async def main():
         future=True,
     )
     
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    
+ 
     # Creating DB connections pool
     db_pool = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
     
